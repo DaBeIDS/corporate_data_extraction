@@ -9,7 +9,7 @@ import importlib
 
 import pandas as pd
 
-import esg_data_pipeline.utils.kpi_mapping as kpi_mapping
+import data_extractor.code.utils.kpi_mapping as kpi_mapping
 from .base_curator import BaseCurator
 
 logger = logging.getLogger(__name__)

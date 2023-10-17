@@ -1,6 +1,4 @@
 import pandas as pd
-from esg_data_pipeline.config import config
-import os
 
 try:
     df = pd.read_csv("/app/code/kpi_mapping.csv", header=0)

@@ -7,7 +7,7 @@ pandas==1.0.5
 farm
 optuna
 Werkzeug==0.16.1
-Flask==1.1.4
+Flask==2.2.5
 pyspellchecker
 spacy
 MarkupSafe

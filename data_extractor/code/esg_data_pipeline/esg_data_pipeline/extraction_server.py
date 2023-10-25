@@ -13,6 +13,7 @@ from .components import Extractor
 from .config import config
 from .components import Curator
 
+
 app = Flask(__name__)
 
 
@@ -156,9 +157,24 @@ def run_extraction():
 
 @app.route('/curate/')
 def run_curation():
-    args = json.loads(request.args['payload'])
+    #args = json.loads(request.args['payload'])
+
+    # Local args dictionary
+    args = {"project_name": 'TEST'}
+    args.update({"s3_usage": False})
+    curation_settings = {}
+    curation_settings.update({"retrieve_paragraph": False})
+    curation_settings.update({"neg_pos_ratio": 1})
+    curation_settings.update({"columns_to_read": ["company", "source_file", "source_page", "kpi_id", "year", "answer", "data_type", "relevant_paragraphs"]})
+    curation_settings.update({"company_to_exclude": []})
+    curation_settings.update({"create_neg_samples": True})
+    curation_settings.update({"min_length_neg_sample": 50})
+    curation_settings.update({"seed": 41})
+    args.update({"curation": curation_settings})
+
+    # Load the extraction settings from args
     project_name = args["project_name"]
-    curation_settings = args["curation"]
+    curation_settings = args['curation']
 
     BASE_DATA_PROJECT_FOLDER = config.DATA_FOLDER / project_name
     BASE_INTERIM_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'ml'
@@ -166,9 +182,11 @@ def run_curation():
     config.CURATION_FOLDER = BASE_INTERIM_FOLDER / 'curation'
     annotation_folder = BASE_INTERIM_FOLDER / 'annotations'
     config.KPI_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'kpi_mapping'
-    create_directory(extraction_folder)
-    create_directory(config.CURATION_FOLDER)
-    create_directory(annotation_folder)
+
+    os.makedirs(extraction_folder, exist_ok=True)
+    os.makedirs(config.CURATION_FOLDER, exist_ok=True)
+    os.makedirs(annotation_folder, exist_ok=True)
+    os.makedirs(config.KPI_FOLDER, exist_ok=True)
     
     s3_usage = args["s3_usage"]
     if s3_usage:
@@ -192,7 +210,7 @@ def run_curation():
         s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/annotations',
                                                  annotation_folder)
 
-    shutil.copyfile(os.path.join(config.KPI_FOLDER, "kpi_mapping.csv"), "/app/code/kpi_mapping.csv")
+    #shutil.copyfile(os.path.join(config.KPI_FOLDER, "kpi_mapping.csv"), "/app/code/kpi_mapping.csv")
 
     config.STAGE = 'curate'
     config.TextCurator_kwargs['retrieve_paragraph'] = curation_settings['retrieve_paragraph']
@@ -202,13 +220,13 @@ def run_curation():
     config.TextCurator_kwargs['min_length_neg_sample'] = curation_settings['min_length_neg_sample']
     config.SEED = curation_settings['seed']
 
-    try:
-        if len(config.CURATORS) != 0:
-            cur = Curator(config.CURATORS)
-            cur.run(extraction_folder, annotation_folder, config.CURATION_FOLDER)
-    except Exception as e:
-        msg = "Error during curation\nException:" + str(repr(e)) + traceback.format_exc()
-        return Response(msg, status=500)
+    #try:
+    if len(config.CURATORS) != 0:
+        cur = Curator(config.CURATORS)
+        cur.run(extraction_folder, annotation_folder, config.CURATION_FOLDER)
+    #except Exception as e:
+        #msg = "Error during curation\nException:" + str(repr(e)) + traceback.format_exc()
+        #return Response(msg, status=500)
     
     if s3_usage:
         s3c_interim.upload_files_in_dir_to_prefix(config.CURATION_FOLDER, 

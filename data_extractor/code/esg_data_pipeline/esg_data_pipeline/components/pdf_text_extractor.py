@@ -80,25 +80,26 @@ class PDFTextExtractor(BaseComponent):
             _logger.warning("{}: Unable to process {}".format(e, pdf_file))
             return {}
 
-        fp = open(pdf_file, 'rb')
-        rsrcmgr = PDFResourceManager()
-        retstr = io.BytesIO()
-        codec = 'utf-8'
-        laparams = LAParams()
-        device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
-        interpreter = PDFPageInterpreter(rsrcmgr, device)
-
         pdf_content = {}
-        for page_number, page in enumerate(PDFPage.get_pages(fp, check_extractable=False)):
-            interpreter.process_page(page)
-            data = retstr.getvalue().decode('utf-8')
-            data_paragraphs = self.process_page(data)
-            if len(data_paragraphs) == 0:
-                continue
-            pdf_content[page_number] = data_paragraphs
-            retstr.truncate(0)
-            retstr.seek(0)
-        fp.close()
+
+        # Create a PDF resource manager
+        rsrcmgr = PDFResourceManager()
+        laparams = LAParams()
+        retstr = io.StringIO()
+
+        with open(pdf_file, 'rb') as fp:
+            # Create a PDF page interpreter
+            device = TextConverter(rsrcmgr, retstr, laparams=laparams)
+            interpreter = PDFPageInterpreter(rsrcmgr, device)
+            for page_number, page in enumerate(PDFPage.get_pages(fp)):
+                interpreter.process_page(page)
+                data = retstr.getvalue()
+                data_paragraphs = self.process_page(data)
+                if len(data_paragraphs) == 0:
+                    continue
+                pdf_content[page_number] = data_paragraphs
+                retstr.truncate(0)
+                retstr.seek(0)
 
         return pdf_content
 

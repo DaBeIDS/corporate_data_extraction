@@ -210,7 +210,7 @@ def run_curation():
         s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/annotations',
                                                  annotation_folder)
 
-    #shutil.copyfile(os.path.join(config.KPI_FOLDER, "kpi_mapping.csv"), "/app/code/kpi_mapping.csv")
+    shutil.copyfile(os.path.join(config.KPI_FOLDER, "kpi_mapping.csv"), "/app/code/kpi_mapping.csv")
 
     config.STAGE = 'curate'
     config.TextCurator_kwargs['retrieve_paragraph'] = curation_settings['retrieve_paragraph']

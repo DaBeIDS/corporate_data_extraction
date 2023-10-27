@@ -1,5 +1,5 @@
 from .components import Extractor, PDFTextExtractor, TextCurator
-from .extraction_server import run_extraction
+
 import logging
 from .config import logging_config, config
 

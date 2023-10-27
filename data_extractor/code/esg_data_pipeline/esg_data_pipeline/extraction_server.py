@@ -220,13 +220,13 @@ def run_curation():
     config.TextCurator_kwargs['min_length_neg_sample'] = curation_settings['min_length_neg_sample']
     config.SEED = curation_settings['seed']
 
-    #try:
-    if len(config.CURATORS) != 0:
-        cur = Curator(config.CURATORS)
-        cur.run(extraction_folder, annotation_folder, config.CURATION_FOLDER)
-    #except Exception as e:
-        #msg = "Error during curation\nException:" + str(repr(e)) + traceback.format_exc()
-        #return Response(msg, status=500)
+    try:
+        if len(config.CURATORS) != 0:
+            cur = Curator(config.CURATORS)
+            cur.run(extraction_folder, annotation_folder, config.CURATION_FOLDER)
+    except Exception as e:
+        msg = "Error during curation\nException:" + str(repr(e)) + traceback.format_exc()
+        return Response(msg, status=500)
     
     if s3_usage:
         s3c_interim.upload_files_in_dir_to_prefix(config.CURATION_FOLDER, 
